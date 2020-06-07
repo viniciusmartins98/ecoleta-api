@@ -3,8 +3,8 @@ import knex from '../database/connection';
 
 class PointsController {
 
-    async index(request: Request, response: Response) {
-        const { city, uf, items } = request.query;
+    async index(req: Request, res: Response) {
+        const { city, uf, items } = req.query;
 
         const parsedItems = String(items)
             .split(',')
@@ -25,7 +25,7 @@ class PointsController {
             };
         });
 
-        return response.json(serializedPoints);
+        return res.json(serializedPoints);
     }
 
     async show(req: Request, res: Response) {
@@ -37,15 +37,16 @@ class PointsController {
             return res.status(400).json({ message: 'Point not found,' });
         }
 
+        const serializedPoint = {
+            ...point,
+            image_url: `http://10.0.0.105:3333/uploads/${point.image}` 
+        }
+
         const items = await knex('items')
             .join('point_items', 'items.id', '=', 'point_items.item_id')
             .where('point_items.point_id', id)
             .select('items.title');
 
-        const serializedPoint = {
-            ...point,
-            image_url: `http://10.0.0.105:3333/uploads/${point.image}` 
-        }
 
         return res.json({ point: serializedPoint, items });
     }
